@@ -7,6 +7,7 @@ import type { SnapshotResolver } from 'jest-snapshot';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { DepGraph } from 'dependency-graph';
 
 async function getDependencyResolver(configPath: string): Promise<DependencyResolver> {
   const { projectConfig: config } = await readConfig({} as Config.Argv, configPath);
@@ -29,18 +30,31 @@ async function getDependencyResolver(configPath: string): Promise<DependencyReso
   return new DependencyResolver(resolver, hasteFS, undefined as any as SnapshotResolver);
 }
 
+interface Options {
+  root?: string | undefined;
+  ignore?: glob.IOptions['ignore'];
+}
+
 export async function buildDependencyGraph(
   filesGlob: string,
-  configPath: string
-): Promise<Record<string, { dependsOn: string[] }>> {
-  const targetFiles = glob.sync(filesGlob);
+  configPath: string,
+  options?: Options
+): Promise<DepGraph<string>> {
+  const root = options?.root || process.cwd();
+
+  const targetFiles = glob.sync(filesGlob, { cwd: root, ignore: options?.ignore });
   const reverseDependencyResolver = await getDependencyResolver(configPath);
 
-  return targetFiles.reduce((acc, file) => {
-    acc[path.relative(process.cwd(), file)] = {
-      dependsOn: reverseDependencyResolver.resolve(file).map((f) => path.relative(process.cwd(), f))
-    };
+  return targetFiles.reduce((graph, file) => {
+    const dependencies = reverseDependencyResolver.resolve(file);
 
-    return acc;
-  }, {} as Record<string, { dependsOn: string[] }>);
+    graph.addNode(file);
+
+    dependencies.forEach((dependency) => {
+      graph.addNode(dependency);
+      graph.addDependency(file, dependency);
+    });
+
+    return graph;
+  }, new DepGraph<string>({ circular: true }));
 }

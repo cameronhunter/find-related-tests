@@ -5,7 +5,7 @@ import { buildDependencyGraph } from './lib';
 import * as assert from 'node:assert';
 
 const {
-  values: { files, config, pretty }
+  values: { files, config, pretty, root }
 } = parseArgs({
   options: {
     files: {
@@ -15,6 +15,11 @@ const {
     config: {
       type: 'string',
       short: 'c'
+    },
+    root: {
+      type: 'string',
+      short: 'r',
+      default: process.cwd()
     },
     pretty: {
       type: 'boolean',
@@ -27,9 +32,9 @@ async function main() {
   assert.ok(files, 'Expected a `files` parameter to be defined');
   assert.ok(config, 'Expected a `config` parameter to be defined');
 
-  const result = await buildDependencyGraph(files, config);
+  const graph = await buildDependencyGraph(files, config, { root });
 
-  console.log(JSON.stringify(result, null, pretty ? 2 : undefined));
+  console.log(JSON.stringify(graph, null, pretty ? 2 : undefined));
 }
 
 main()
