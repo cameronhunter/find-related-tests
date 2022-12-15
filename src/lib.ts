@@ -6,7 +6,6 @@ import Runtime from 'jest-runtime';
 import type { SnapshotResolver } from 'jest-snapshot';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
-import * as path from 'node:path';
 import { DepGraph } from 'dependency-graph';
 
 async function getDependencyResolver(configPath: string): Promise<DependencyResolver> {
