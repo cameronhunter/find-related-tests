@@ -5,34 +5,32 @@ import { buildDependencyGraph } from './lib';
 import * as assert from 'node:assert';
 
 const {
-  values: { files, config, pretty, root }
+  values: { file, config, pretty, cwd }
 } = parseArgs({
   options: {
-    files: {
+    file: {
       type: 'string',
-      short: 'f'
+      short: 'f',
+      multiple: true
     },
     config: {
-      type: 'string',
-      short: 'c'
+      type: 'string'
     },
-    root: {
+    cwd: {
       type: 'string',
-      short: 'r',
       default: process.cwd()
     },
     pretty: {
-      type: 'boolean',
-      short: 'p'
+      type: 'boolean'
     }
   }
 });
 
 async function main() {
-  assert.ok(files, 'Expected a `files` parameter to be defined');
+  assert.ok(file, 'Expected a `file` parameter to be defined');
   assert.ok(config, 'Expected a `config` parameter to be defined');
 
-  const graph = await buildDependencyGraph(files, config, { root });
+  const graph = await buildDependencyGraph(file, config, { cwd });
 
   console.log(JSON.stringify(graph, null, pretty ? 2 : undefined));
 }

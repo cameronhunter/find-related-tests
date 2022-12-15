@@ -31,32 +31,50 @@ async function getDependencyResolver(configPath: string): Promise<DependencyReso
 }
 
 interface Options {
-  root?: string | undefined;
+  cwd?: string | undefined;
   ignore?: glob.IOptions['ignore'];
 }
 
 export async function buildDependencyGraph(
-  filesGlob: string,
+  files: string | string[],
   configPath: string,
   options?: Options
 ): Promise<DepGraph<string>> {
-  const root = options?.root || process.cwd();
+  const cwd = options?.cwd || process.cwd();
 
-  const targetFiles = glob.sync(filesGlob, { ignore: options?.ignore });
-  const reverseDependencyResolver = await getDependencyResolver(configPath);
+  const targetFiles = findFiles(files, { cwd, ...options });
+  const reverseDependencyResolver = await getDependencyResolver(path.resolve(cwd, configPath));
 
   return targetFiles.reduce((graph, file) => {
     const dependencies = reverseDependencyResolver.resolve(file);
 
-    const relativeFile = path.relative(root, file);
+    const relativeFile = path.relative(cwd, file);
     graph.addNode(relativeFile);
 
     dependencies.forEach((dependency) => {
-      const relativeDependency = path.relative(root, dependency);
+      const relativeDependency = path.relative(cwd, dependency);
       graph.addNode(relativeDependency);
       graph.addDependency(relativeFile, relativeDependency);
     });
 
     return graph;
   }, new DepGraph<string>({ circular: true }));
+}
+
+/**
+ * Support finding files using either an array of paths/globs or a single
+ * path/glob.
+ */
+function findFiles(input: string | string[], options?: glob.IOptions): string[] {
+  const files = Array.isArray(input) ? input : [input];
+
+  const set = files.reduce((state, file) => {
+    for (const result of glob.sync(file, { ...options, absolute: true })) {
+      state.add(result);
+    }
+
+    return state;
+  }, new Set<string>());
+
+  return Array.from(set);
 }
