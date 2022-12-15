@@ -7,6 +7,7 @@ import type { SnapshotResolver } from 'jest-snapshot';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import { DepGraph } from 'dependency-graph';
+import * as path from 'node:path';
 
 async function getDependencyResolver(configPath: string): Promise<DependencyResolver> {
   const { projectConfig: config } = await readConfig({} as Config.Argv, configPath);
@@ -41,17 +42,19 @@ export async function buildDependencyGraph(
 ): Promise<DepGraph<string>> {
   const root = options?.root || process.cwd();
 
-  const targetFiles = glob.sync(filesGlob, { cwd: root, ignore: options?.ignore });
+  const targetFiles = glob.sync(filesGlob, { ignore: options?.ignore });
   const reverseDependencyResolver = await getDependencyResolver(configPath);
 
   return targetFiles.reduce((graph, file) => {
     const dependencies = reverseDependencyResolver.resolve(file);
 
-    graph.addNode(file);
+    const relativeFile = path.relative(root, file);
+    graph.addNode(relativeFile);
 
     dependencies.forEach((dependency) => {
-      graph.addNode(dependency);
-      graph.addDependency(file, dependency);
+      const relativeDependency = path.relative(root, dependency);
+      graph.addNode(relativeDependency);
+      graph.addDependency(relativeFile, relativeDependency);
     });
 
     return graph;
