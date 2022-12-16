@@ -5,7 +5,7 @@
  * @tag mdp
  */
 
-test('Smoke test', async () => {
+test('Smoke test', () => {
   // Start app -> profile gate
   // Select profile -> browse
   // Use app menu to navigate to search -> search
