@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import { parseArgs } from 'node:util';
-import { DependencyResolver } from './lib';
+import { Project } from './lib';
 import * as assert from 'node:assert';
 
 const {
-  values: { file, config, cwd }
+  values: { file: files, config, cwd, tags }
 } = parseArgs({
   options: {
     file: {
@@ -16,6 +16,9 @@ const {
     config: {
       type: 'string'
     },
+    tags: {
+      type: 'boolean'
+    },
     cwd: {
       type: 'string',
       default: process.cwd()
@@ -24,14 +27,15 @@ const {
 });
 
 async function main() {
-  assert.ok(file, 'Expected a `file` parameter to be defined');
+  assert.ok(files, 'Expected a `file` parameter to be defined');
   assert.ok(config, 'Expected a `config` parameter to be defined');
 
-  const resolver = await DependencyResolver.create(config, { cwd: cwd || process.cwd() });
-  const tests = await resolver.findRelatedTests(file);
+  const project = new Project(config, { cwd: cwd || process.cwd() });
 
-  for (const test of tests) {
-    console.log(test);
+  const results = await (tags ? project.findRelatedTags(files) : project.findRelatedTests(files));
+
+  for (const result of results) {
+    console.log(result);
   }
 }
 
