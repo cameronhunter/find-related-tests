@@ -3,7 +3,13 @@ import { parseTagMap } from './parseTags';
 import Jest from './jest';
 import type { JestDependencyResolver } from './jest';
 
-interface Options {
+export interface Options {
+  /**
+   * Current Working Directory
+   *
+   * Paths will be resolved and made relative to this value. The default is the
+   * process's current working directory.
+   */
   cwd?: string;
 }
 
@@ -11,8 +17,8 @@ export class Project {
   #jest: Jest;
   #options: Required<Options>;
 
-  #tagsToTests?: Map<string, string[]>;
   #resolver?: JestDependencyResolver;
+  #tagsToTests?: Map<string, string[]>;
 
   constructor(configPath: string, options?: Options) {
     this.#options = { cwd: process.cwd(), ...options };
