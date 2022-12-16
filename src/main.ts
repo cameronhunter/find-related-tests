@@ -28,7 +28,7 @@ async function main() {
   assert.ok(config, 'Expected a `config` parameter to be defined');
 
   const resolver = await DependencyResolver.create(config, { cwd: cwd || process.cwd() });
-  const tags = await resolver.tags(file);
+  const tags = await resolver.findTags(...file);
 
   for (const tag of tags) {
     console.log(tag);

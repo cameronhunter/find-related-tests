@@ -47,7 +47,7 @@ export class DependencyResolver {
   /**
    * Given a list of files, find all files that they depend on.
    */
-  resolve(paths: string | string[]): Set<string> {
+  resolve(...paths: string[]): Set<string> {
     return new Set(
       this.resolvePaths(paths)
         .flatMap((file) => this.#resolver.resolve(file))
@@ -58,7 +58,7 @@ export class DependencyResolver {
   /**
    * Given a list of files, find all files that depend on them.
    */
-  resolveInverse(paths: string | string[]): Set<string> {
+  resolveInverse(...paths: string[]): Set<string> {
     return new Set(
       this.resolvePaths(paths)
         .flatMap((file) => this.#resolver.resolveInverse(new Set([file]), (f) => f !== file))
@@ -66,8 +66,8 @@ export class DependencyResolver {
     );
   }
 
-  async tags(paths: string | string[]): Promise<Set<string>> {
-    const files = [...this.resolveInverse(paths), ...this.resolvePaths(paths)];
+  async findTags(...paths: string[]): Promise<Set<string>> {
+    const files = [...this.resolveInverse(...paths), ...this.resolvePaths(paths)];
 
     const tags = await Promise.all(files.map((file) => this.getPragmaFromFile(file, 'tag')));
 
@@ -99,7 +99,7 @@ export class DependencyResolver {
    * Resolve filepaths to absolute filepaths taking the current working
    * directory into account.
    */
-  private resolvePaths(files: string | string[]): string[] {
-    return (Array.isArray(files) ? files : [files]).map((file) => path.resolve(this.#options.cwd, file));
+  private resolvePaths(files: string[]): string[] {
+    return files.map((file) => path.resolve(this.#options.cwd, file));
   }
 }
