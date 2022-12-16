@@ -2,14 +2,12 @@ import type { Config } from '@jest/types';
 import { readConfig } from 'jest-config';
 import { DependencyResolver as JestDependencyResolver } from 'jest-resolve-dependencies';
 import Runtime from 'jest-runtime';
-import { extract, parse } from 'jest-docblock';
 import type { SnapshotResolver } from 'jest-snapshot';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { SearchSource } from '@jest/core';
-
-type JestTestContext = Awaited<ReturnType<typeof Runtime['createContext']>>;
+import { parseTagMap } from './parseTags';
 
 interface Options {
   cwd?: string;
@@ -29,6 +27,11 @@ export class DependencyResolver {
       watchman: false
     });
 
+    const source = new SearchSource(context);
+    const results = await source.getTestPaths(globalConfig);
+    const testPaths = results.tests.map((test) => test.path);
+    const tagsToTests = await parseTagMap(testPaths, options);
+
     const hasteMap = await Runtime.createHasteMap(projectConfig, {
       console: { log() {}, error() {}, warn() {} } as any as Console,
       maxWorkers: os.cpus().length - 1,
@@ -39,28 +42,22 @@ export class DependencyResolver {
     const { hasteFS, moduleMap } = await hasteMap.build();
     const resolver = Runtime.createResolver(projectConfig, moduleMap);
 
-    return new DependencyResolver(
-      context,
-      new JestDependencyResolver(resolver, hasteFS, undefined as any as SnapshotResolver),
-      globalConfig,
-      opts
-    );
+    const jestResolver = new JestDependencyResolver(resolver, hasteFS, undefined as any as SnapshotResolver);
+
+    return new DependencyResolver(tagsToTests, jestResolver, opts);
   }
 
-  #context: JestTestContext;
+  #tagsToTests: Map<string, string[]>;
   #resolver: JestDependencyResolver;
-  #globalConfig: Config.GlobalConfig;
   #options: Required<Options>;
 
   private constructor(
-    context: JestTestContext,
+    tagsToTests: Map<string, string[]>,
     resolver: JestDependencyResolver,
-    globalConfig: Config.GlobalConfig,
     options: Required<Options>
   ) {
-    this.#context = context;
+    this.#tagsToTests = tagsToTests;
     this.#resolver = resolver;
-    this.#globalConfig = globalConfig;
     this.#options = options;
   }
 
@@ -87,59 +84,29 @@ export class DependencyResolver {
   }
 
   async resolveInverseTags(filepaths: string[]): Promise<Set<string>> {
+    // We want to include tags from the files themselves, not just dependent files.
     const files = [...this.resolveInverse(filepaths), ...this.resolvePaths(filepaths)];
 
-    const tags = await Promise.all(files.map((file) => this.getPragmaFromFile(file, 'tag')));
+    const tagsToFiles = await parseTagMap(files, this.#options);
 
-    return new Set(tags.flat());
+    return new Set(tagsToFiles.keys());
   }
 
-  async resolveTests(filepaths: string[]): Promise<Set<string>> {
+  async findRelatedTests(filepaths: string[]): Promise<Set<string>> {
     const tags = await this.resolveInverseTags(filepaths);
-    const source = new SearchSource(this.#context);
 
-    // TODO: This should be made more efficient. Can we use Jest's filter?
-    const allTests = await source.getTestPaths(this.#globalConfig);
+    const relatedTests = [];
 
-    const set = new Set<string>();
-    for (const test of allTests.tests) {
-      if (await this.fileContainsTags(test.path, tags)) {
-        set.add(test.path);
-      }
+    for (const tag of tags) {
+      const tests = this.#tagsToTests.get(tag) || [];
+      relatedTests.push(...tests);
     }
 
-    return new Set(Array.from(set).map((file) => path.relative(this.#options.cwd, file)));
-  }
-
-  private async fileContainsTags(file: string, tags: Set<string>): Promise<boolean> {
-    const fileTags = await this.getPragmaFromFile(file, 'tag');
-    return fileTags.some((tag) => tags.has(tag));
+    return new Set(relatedTests);
   }
 
   /**
-   * Parse the docblock from a file and extract named pragma values.
-   */
-  private async getPragmaFromFile(filepath: string, pragma: string): Promise<string[]> {
-    const contents = await fs.readFile(path.resolve(this.#options.cwd, filepath), 'utf-8');
-    const docblock = extract(contents);
-    const pragmas = parse(docblock);
-
-    const values = pragmas[pragma];
-
-    if (!values) {
-      return [];
-    }
-
-    if (typeof values === 'string') {
-      return [values];
-    }
-
-    return values;
-  }
-
-  /**
-   * Resolve filepaths to absolute filepaths taking the current working
-   * directory into account.
+   * Resolve filepaths to absolute filepaths taking the current working directory into account.
    */
   private resolvePaths(files: string[]): string[] {
     return files.map((file) => path.resolve(this.#options.cwd, file));

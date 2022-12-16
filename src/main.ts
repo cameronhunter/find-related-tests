@@ -28,7 +28,7 @@ async function main() {
   assert.ok(config, 'Expected a `config` parameter to be defined');
 
   const resolver = await DependencyResolver.create(config, { cwd: cwd || process.cwd() });
-  const tests = await resolver.resolveTests(file);
+  const tests = await resolver.findRelatedTests(file);
 
   for (const test of tests) {
     console.log(test);

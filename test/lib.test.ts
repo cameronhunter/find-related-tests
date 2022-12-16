@@ -4,7 +4,8 @@ test('Find related tests', async () => {
   const resolver = await DependencyResolver.create('jest.config.cjs', { cwd: './test/__fixtures__' });
 
   const changedFiles = ['darwin/components/keyboard.js'];
-  const relatedTests = await resolver.resolveTests(changedFiles);
+
+  const relatedTests = await resolver.findRelatedTests(changedFiles);
 
   expect(relatedTests).toEqual(
     new Set([
