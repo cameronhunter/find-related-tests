@@ -18,10 +18,13 @@ test('tags', async () => {
   );
 });
 
-test('tests', async () => {
+test('Find related tests', async () => {
   const resolver = await DependencyResolver.create('jest.config.cjs', { cwd: './test/__fixtures__' });
 
-  expect(await resolver.resolveTests(['components/keyboard.js'])).toEqual(
+  const changedFiles = ['components/keyboard.js'];
+  const relatedTests = await resolver.resolveTests(changedFiles);
+
+  expect(relatedTests).toEqual(
     new Set(['__functional__/keyboard.test.js', '__functional__/search.test.js', '__functional__/smoke.test.js'])
   );
 });
