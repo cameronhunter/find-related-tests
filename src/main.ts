@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import { parseArgs } from 'node:util';
-import { buildDependencyGraph } from './lib';
+import { DependencyResolver } from './lib';
 import * as assert from 'node:assert';
 
 const {
-  values: { file, config, pretty, cwd }
+  values: { file, config, cwd }
 } = parseArgs({
   options: {
     file: {
@@ -19,9 +19,6 @@ const {
     cwd: {
       type: 'string',
       default: process.cwd()
-    },
-    pretty: {
-      type: 'boolean'
     }
   }
 });
@@ -30,9 +27,12 @@ async function main() {
   assert.ok(file, 'Expected a `file` parameter to be defined');
   assert.ok(config, 'Expected a `config` parameter to be defined');
 
-  const graph = await buildDependencyGraph(file, config, { cwd });
+  const resolver = await DependencyResolver.create(config, { cwd: cwd || process.cwd() });
+  const tags = await resolver.tags(file);
 
-  console.log(JSON.stringify(graph, null, pretty ? 2 : undefined));
+  for (const tag of tags) {
+    console.log(tag);
+  }
 }
 
 main()

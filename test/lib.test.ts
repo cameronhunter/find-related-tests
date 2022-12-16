@@ -1,15 +1,35 @@
-import { buildDependencyGraph } from '../src/lib';
+import { DependencyResolver } from '../src/lib';
 
-test('Integration test', async () => {
-  const graph = await buildDependencyGraph('*.js', 'jest.config.cjs', { cwd: './test/__resources__' });
+describe('simple', () => {
+  test('resolveInverse', async () => {
+    const resolver = await DependencyResolver.create('jest.config.cjs', { cwd: './test/__fixtures__/simple' });
+    const files = resolver.resolveInverse('d.js');
 
-  expect(graph.dependenciesOf('a.js')).toEqual(['b.js', 'd.js', 'c.js']);
-  expect(graph.dependenciesOf('b.js')).toEqual([]);
-  expect(graph.dependenciesOf('c.js')).toEqual(['d.js']);
-  expect(graph.dependenciesOf('d.js')).toEqual([]);
+    expect(files).toEqual(new Set(['a.js', 'c.js']));
+  });
 
-  expect(graph.dependantsOf('a.js')).toEqual([]);
-  expect(graph.dependantsOf('b.js')).toEqual(['a.js']);
-  expect(graph.dependantsOf('c.js')).toEqual(['a.js']);
-  expect(graph.dependantsOf('d.js')).toEqual(['a.js', 'c.js']);
+  test('tags', async () => {
+    const resolver = await DependencyResolver.create('jest.config.cjs', { cwd: './test/__fixtures__/simple' });
+    const tags = await resolver.tags('d.js');
+
+    expect(tags).toEqual(new Set(['a', 'c', 'd']));
+  });
+});
+
+describe('realistic', () => {
+  test('tags', async () => {
+    const resolver = await DependencyResolver.create('jest.config.cjs', { cwd: './test/__fixtures__/realistic' });
+
+    expect(await resolver.tags(['components/boxshot.js'])).toEqual(new Set(['boxshot', 'browse', 'search']));
+
+    expect(await resolver.tags(['components/bob.js'])).toEqual(new Set(['browse', 'edp', 'mdp', 'bob']));
+
+    expect(await resolver.tags(['components/text.js'])).toEqual(
+      new Set(['bob', 'browse', 'button', 'edp', 'keyboard', 'mdp', 'menu', 'search', 'text'])
+    );
+
+    expect(await resolver.tags(['components/text.js', 'components/image.js'])).toEqual(
+      new Set(['bob', 'browse', 'button', 'edp', 'keyboard', 'mdp', 'menu', 'search', 'text', 'boxshot', 'image'])
+    );
+  });
 });

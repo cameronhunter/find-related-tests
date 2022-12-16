@@ -1,1 +1,5 @@
+/**
+ * @tag b
+ */
+
 export default {};

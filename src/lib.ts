@@ -1,80 +1,105 @@
 import type { Config } from '@jest/types';
-import glob from 'glob';
 import { readConfig } from 'jest-config';
-import { DependencyResolver } from 'jest-resolve-dependencies';
+import { DependencyResolver as JestDependencyResolver } from 'jest-resolve-dependencies';
 import Runtime from 'jest-runtime';
+import { extract, parse } from 'jest-docblock';
 import type { SnapshotResolver } from 'jest-snapshot';
-import * as fs from 'node:fs';
+import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
-import { DepGraph } from 'dependency-graph';
 import * as path from 'node:path';
 
-async function getDependencyResolver(configPath: string): Promise<DependencyResolver> {
-  const { projectConfig: config } = await readConfig({} as Config.Argv, configPath);
-  const cacheDirExists = fs.existsSync(config.cacheDirectory);
-
-  if (!cacheDirExists) {
-    await fs.promises.mkdir(config.cacheDirectory, { recursive: true });
-  }
-
-  const hasteMap = await Runtime.createHasteMap(config, {
-    console: { log() {}, error() {}, warn() {} } as any as Console,
-    maxWorkers: os.cpus().length - 1,
-    resetCache: false,
-    watchman: false
-  });
-
-  const { hasteFS, moduleMap } = await hasteMap.build();
-  const resolver = Runtime.createResolver(config, moduleMap);
-
-  return new DependencyResolver(resolver, hasteFS, undefined as any as SnapshotResolver);
-}
-
 interface Options {
-  cwd?: string | undefined;
-  ignore?: glob.IOptions['ignore'];
+  cwd?: string;
 }
 
-export async function buildDependencyGraph(
-  files: string | string[],
-  configPath: string,
-  options?: Options
-): Promise<DepGraph<string>> {
-  const cwd = options?.cwd || process.cwd();
+export class DependencyResolver {
+  static async create(config: string, options?: Options): Promise<DependencyResolver> {
+    const opts: Required<Options> = { cwd: process.cwd(), ...options };
 
-  const targetFiles = findFiles(files, { cwd, ...options });
-  const reverseDependencyResolver = await getDependencyResolver(path.resolve(cwd, configPath));
+    const { projectConfig } = await readConfig({} as Config.Argv, path.resolve(opts.cwd, config));
 
-  return targetFiles.reduce((graph, file) => {
-    const dependencies = reverseDependencyResolver.resolve(file);
+    await fs.mkdir(projectConfig.cacheDirectory, { recursive: true });
 
-    const relativeFile = path.relative(cwd, file);
-    graph.addNode(relativeFile);
-
-    dependencies.forEach((dependency) => {
-      const relativeDependency = path.relative(cwd, dependency);
-      graph.addNode(relativeDependency);
-      graph.addDependency(relativeFile, relativeDependency);
+    const hasteMap = await Runtime.createHasteMap(projectConfig, {
+      console: { log() {}, error() {}, warn() {} } as any as Console,
+      maxWorkers: os.cpus().length - 1,
+      resetCache: false,
+      watchman: false
     });
 
-    return graph;
-  }, new DepGraph<string>({ circular: true }));
-}
+    const { hasteFS, moduleMap } = await hasteMap.build();
+    const resolver = Runtime.createResolver(projectConfig, moduleMap);
 
-/**
- * Support finding files using either an array of paths/globs or a single
- * path/glob.
- */
-function findFiles(input: string | string[], options?: glob.IOptions): string[] {
-  const files = Array.isArray(input) ? input : [input];
+    return new DependencyResolver(
+      new JestDependencyResolver(resolver, hasteFS, undefined as any as SnapshotResolver),
+      opts
+    );
+  }
 
-  const set = files.reduce((state, file) => {
-    for (const result of glob.sync(file, { ...options, absolute: true })) {
-      state.add(result);
+  #resolver: JestDependencyResolver;
+  #options: Required<Options>;
+
+  private constructor(resolver: JestDependencyResolver, options: Required<Options>) {
+    this.#resolver = resolver;
+    this.#options = options;
+  }
+
+  /**
+   * Given a list of files, find all files that they depend on.
+   */
+  resolve(paths: string | string[]): Set<string> {
+    return new Set(
+      this.resolvePaths(paths)
+        .flatMap((file) => this.#resolver.resolve(file))
+        .map((file) => path.relative(this.#options.cwd, file))
+    );
+  }
+
+  /**
+   * Given a list of files, find all files that depend on them.
+   */
+  resolveInverse(paths: string | string[]): Set<string> {
+    return new Set(
+      this.resolvePaths(paths)
+        .flatMap((file) => this.#resolver.resolveInverse(new Set([file]), (f) => f !== file))
+        .map((file) => path.relative(this.#options.cwd, file))
+    );
+  }
+
+  async tags(paths: string | string[]): Promise<Set<string>> {
+    const files = Array.from(this.resolveInverse(paths)).concat(this.resolvePaths(paths));
+
+    const tags = await Promise.all(files.map((file) => this.getPragmaFromFile(file, 'tag')));
+
+    return new Set(tags.flat());
+  }
+
+  /**
+   * Parse the docblock from a file and extract named pragma values.
+   */
+  private async getPragmaFromFile(filepath: string, pragma: string): Promise<string[]> {
+    const contents = await fs.readFile(path.resolve(this.#options.cwd, filepath), 'utf-8');
+    const docblock = extract(contents);
+    const pragmas = parse(docblock);
+
+    const values = pragmas[pragma];
+
+    if (!values) {
+      return [];
     }
 
-    return state;
-  }, new Set<string>());
+    if (typeof values === 'string') {
+      return [values];
+    }
 
-  return Array.from(set);
+    return values;
+  }
+
+  /**
+   * Resolve filepaths to absolute filepaths taking the current working
+   * directory into account.
+   */
+  private resolvePaths(files: string | string[]): string[] {
+    return (Array.isArray(files) ? files : [files]).map((file) => path.resolve(this.#options.cwd, file));
+  }
 }
