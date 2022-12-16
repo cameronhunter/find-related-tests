@@ -29,7 +29,7 @@ async function main() {
   assert.ok(config, 'Expected a `config` parameter to be defined');
 
   const resolver = await DependencyResolver.create(config, { cwd: cwd || process.cwd() });
-  const tags = await resolver.resolveInverseTags(file[0], ...file.slice(1));
+  const tags = await resolver.resolveTests(file[0], ...file.slice(1));
 
   for (const tag of tags) {
     console.log(tag);
