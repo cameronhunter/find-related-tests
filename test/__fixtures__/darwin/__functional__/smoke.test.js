@@ -1,13 +1,22 @@
-/**
- * @tag profileGate
- * @tag browse
- * @tag search
- * @tag mdp
- */
+import { Browse, MDP, ProfileGate, Search } from '../../page-object-model';
 
-test('Smoke test', () => {
-  // Start app -> profile gate
-  // Select profile -> browse
-  // Use app menu to navigate to search -> search
-  // Type something and select boxart -> mdp
+const page = {};
+
+test('Smoke test', async () => {
+  const profileGate = await ProfileGate.from(page);
+
+  await profileGate.selectProfile(0);
+
+  const browse = await Browse.from(page);
+
+  await browse.selectInAppMenu('Search');
+
+  const search = await Search.from(page);
+
+  await search.searchFor('Stranger Things');
+  await search.selectResult(0);
+
+  const mdp = await MDP.from(page);
+
+  await mdp.addToMyList();
 });

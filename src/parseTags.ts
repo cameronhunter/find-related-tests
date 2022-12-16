@@ -8,7 +8,12 @@ import { extract, parse } from 'jest-docblock';
  * In theory, this could use any methodology for extracting tags from a file, it
  * doesn't necessarily need to use docblock pragmas.
  */
-export async function parseTags(filepath: string, options?: { cwd?: string }): Promise<string[]> {
+export async function parseTags(filepath: string | string[], options?: { cwd?: string }): Promise<string[]> {
+  if (Array.isArray(filepath)) {
+    const tags = await parseTagMap(filepath, options);
+    return Array.from(tags.keys());
+  }
+
   const cwd = options?.cwd || process.cwd();
   const contents = await fs.readFile(path.resolve(cwd, filepath), 'utf-8');
   const docblock = extract(contents);

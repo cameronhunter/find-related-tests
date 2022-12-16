@@ -1,5 +1,5 @@
 import * as path from 'node:path';
-import { parseTagMap } from './parseTags';
+import { parseTagMap, parseTags } from './parseTags';
 import Jest from './jest';
 import type { JestDependencyResolver } from './jest';
 
@@ -58,6 +58,26 @@ export class Project {
   }
 
   /**
+   * Given a list of files, find all files that they depend on.
+   */
+  private async resolve(filepaths: string[]): Promise<Set<string>> {
+    const resolver = await this.getResolver();
+
+    function resolveDeps(filepath: string): string[] {
+      const directDependencies = resolver.resolve(filepath);
+      const transitiveDependencies = directDependencies.flatMap(resolveDeps);
+
+      return [...directDependencies, ...transitiveDependencies];
+    }
+
+    return new Set(
+      this.resolvePaths(filepaths)
+        .flatMap(resolveDeps)
+        .map((file) => path.relative(this.#options.cwd, file))
+    );
+  }
+
+  /**
    * Given a list of files, find all files that depend on them.
    */
   private async resolveInverse(filepaths: string[]): Promise<Set<string>> {
@@ -85,7 +105,21 @@ export class Project {
     }
 
     const testPaths = await this.#jest.getTestPaths();
-    this.#tagsToTests = await parseTagMap(testPaths, this.#options);
+
+    const map = new Map<string, string[]>();
+
+    for (const testPath of testPaths) {
+      const dependencies = await this.resolve([testPath]);
+      const tags = await parseTags([testPath, ...dependencies], this.#options);
+
+      for (const tag of tags) {
+        const value = map.get(tag) || [];
+        const newValue = new Set([...value, path.relative(this.#options.cwd, testPath)]);
+        map.set(tag, Array.from(newValue));
+      }
+    }
+
+    this.#tagsToTests = map;
 
     return this.#tagsToTests;
   }

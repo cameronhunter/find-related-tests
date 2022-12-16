@@ -18,6 +18,15 @@ test('Find related tests', async () => {
       'darwin/__functional__/smoke.test.js'
     ])
   );
+
+  expect(await project.findRelatedTests(['darwin/components/menu.js'])).toEqual(
+    new Set([
+      'darwin/__functional__/mdp.test.js',
+      'darwin/__functional__/menu.test.js',
+      'darwin/__functional__/search.test.js',
+      'darwin/__functional__/smoke.test.js'
+    ])
+  );
 });
 
 test('Find related tags', async () => {
