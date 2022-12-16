@@ -25,11 +25,10 @@ const {
 
 async function main() {
   assert.ok(file, 'Expected a `file` parameter to be defined');
-  assert.ok(file[0], 'Expected at least one `file` to be defined');
   assert.ok(config, 'Expected a `config` parameter to be defined');
 
   const resolver = await DependencyResolver.create(config, { cwd: cwd || process.cwd() });
-  const tests = await resolver.resolveTests(file[0], ...file.slice(1));
+  const tests = await resolver.resolveTests(file);
 
   for (const test of tests) {
     console.log(test);

@@ -67,9 +67,9 @@ export class DependencyResolver {
   /**
    * Given a list of files, find all files that they depend on.
    */
-  resolve(filepath: string, ...rest: string[]): Set<string> {
+  resolve(filepaths: string[]): Set<string> {
     return new Set(
-      this.resolvePaths([filepath, ...rest])
+      this.resolvePaths(filepaths)
         .flatMap((file) => this.#resolver.resolve(file))
         .map((file) => path.relative(this.#options.cwd, file))
     );
@@ -78,24 +78,24 @@ export class DependencyResolver {
   /**
    * Given a list of files, find all files that depend on them.
    */
-  resolveInverse(filepath: string, ...rest: string[]): Set<string> {
+  resolveInverse(filepaths: string[]): Set<string> {
     return new Set(
-      this.resolvePaths([filepath, ...rest])
+      this.resolvePaths(filepaths)
         .flatMap((file) => this.#resolver.resolveInverse(new Set([file]), (f) => f !== file))
         .map((file) => path.relative(this.#options.cwd, file))
     );
   }
 
-  async resolveInverseTags(filepath: string, ...rest: string[]): Promise<Set<string>> {
-    const files = [...this.resolveInverse(filepath, ...rest), ...this.resolvePaths([filepath, ...rest])];
+  async resolveInverseTags(filepaths: string[]): Promise<Set<string>> {
+    const files = [...this.resolveInverse(filepaths), ...this.resolvePaths(filepaths)];
 
     const tags = await Promise.all(files.map((file) => this.getPragmaFromFile(file, 'tag')));
 
     return new Set(tags.flat());
   }
 
-  async resolveTests(filepath: string, ...rest: string[]): Promise<Set<string>> {
-    const tags = await this.resolveInverseTags(filepath, ...rest);
+  async resolveTests(filepaths: string[]): Promise<Set<string>> {
+    const tags = await this.resolveInverseTags(filepaths);
     const source = new SearchSource(this.#context);
 
     // TODO: This should be made more efficient. Can we use Jest's filter?
