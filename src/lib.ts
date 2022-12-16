@@ -7,6 +7,9 @@ import type { SnapshotResolver } from 'jest-snapshot';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { SearchSource } from '@jest/core';
+
+type JestTestContext = Awaited<ReturnType<typeof Runtime['createContext']>>;
 
 interface Options {
   cwd?: string;
@@ -16,9 +19,15 @@ export class DependencyResolver {
   static async create(config: string, options?: Options): Promise<DependencyResolver> {
     const opts: Required<Options> = { cwd: process.cwd(), ...options };
 
-    const { projectConfig } = await readConfig({} as Config.Argv, path.resolve(opts.cwd, config));
+    const { projectConfig, globalConfig } = await readConfig({} as Config.Argv, path.resolve(opts.cwd, config));
 
     await fs.mkdir(projectConfig.cacheDirectory, { recursive: true });
+
+    const context = await Runtime.createContext(projectConfig, {
+      console: { log() {}, error() {}, warn() {} } as any as Console,
+      maxWorkers: os.cpus().length - 1,
+      watchman: false
+    });
 
     const hasteMap = await Runtime.createHasteMap(projectConfig, {
       console: { log() {}, error() {}, warn() {} } as any as Console,
@@ -31,16 +40,27 @@ export class DependencyResolver {
     const resolver = Runtime.createResolver(projectConfig, moduleMap);
 
     return new DependencyResolver(
+      context,
       new JestDependencyResolver(resolver, hasteFS, undefined as any as SnapshotResolver),
+      globalConfig,
       opts
     );
   }
 
+  #context: JestTestContext;
   #resolver: JestDependencyResolver;
+  #globalConfig: Config.GlobalConfig;
   #options: Required<Options>;
 
-  private constructor(resolver: JestDependencyResolver, options: Required<Options>) {
+  private constructor(
+    context: JestTestContext,
+    resolver: JestDependencyResolver,
+    globalConfig: Config.GlobalConfig,
+    options: Required<Options>
+  ) {
+    this.#context = context;
     this.#resolver = resolver;
+    this.#globalConfig = globalConfig;
     this.#options = options;
   }
 
@@ -72,6 +92,28 @@ export class DependencyResolver {
     const tags = await Promise.all(files.map((file) => this.getPragmaFromFile(file, 'tag')));
 
     return new Set(tags.flat());
+  }
+
+  async resolveTests(...paths: string[]): Promise<Set<string>> {
+    const tags = await this.resolveInverseTags(...paths);
+    const source = new SearchSource(this.#context);
+
+    // TODO: This should be made more efficient. Can we use Jest's filter?
+    const allTests = await source.getTestPaths(this.#globalConfig);
+
+    const set = new Set<string>();
+    for (const test of allTests.tests) {
+      if (await this.fileContainsTags(test.path, tags)) {
+        set.add(test.path);
+      }
+    }
+
+    return new Set(Array.from(set).map((file) => path.relative(this.#options.cwd, file)));
+  }
+
+  private async fileContainsTags(file: string, tags: Set<string>): Promise<boolean> {
+    const fileTags = await this.getPragmaFromFile(file, 'tag');
+    return fileTags.some((tag) => tags.has(tag));
   }
 
   /**

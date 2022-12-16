@@ -1,5 +1,0 @@
-/**
- * @tag d
- */
-
-export default {};
