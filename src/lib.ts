@@ -66,7 +66,7 @@ export class DependencyResolver {
     );
   }
 
-  async findTags(...paths: string[]): Promise<Set<string>> {
+  async resolveInverseTags(...paths: string[]): Promise<Set<string>> {
     const files = [...this.resolveInverse(...paths), ...this.resolvePaths(paths)];
 
     const tags = await Promise.all(files.map((file) => this.getPragmaFromFile(file, 'tag')));

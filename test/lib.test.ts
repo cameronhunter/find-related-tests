@@ -10,7 +10,7 @@ describe('simple', () => {
 
   test('tags', async () => {
     const resolver = await DependencyResolver.create('jest.config.cjs', { cwd: './test/__fixtures__/simple' });
-    const tags = await resolver.findTags('d.js');
+    const tags = await resolver.resolveInverseTags('d.js');
 
     expect(tags).toEqual(new Set(['a', 'c', 'd']));
   });
@@ -20,15 +20,17 @@ describe('realistic', () => {
   test('tags', async () => {
     const resolver = await DependencyResolver.create('jest.config.cjs', { cwd: './test/__fixtures__/realistic' });
 
-    expect(await resolver.findTags('components/boxshot.js')).toEqual(new Set(['boxshot', 'browse', 'search']));
+    expect(await resolver.resolveInverseTags('components/boxshot.js')).toEqual(
+      new Set(['boxshot', 'browse', 'search'])
+    );
 
-    expect(await resolver.findTags('components/bob.js')).toEqual(new Set(['browse', 'edp', 'mdp', 'bob']));
+    expect(await resolver.resolveInverseTags('components/bob.js')).toEqual(new Set(['browse', 'edp', 'mdp', 'bob']));
 
-    expect(await resolver.findTags('components/text.js')).toEqual(
+    expect(await resolver.resolveInverseTags('components/text.js')).toEqual(
       new Set(['bob', 'browse', 'button', 'edp', 'keyboard', 'mdp', 'menu', 'search', 'text'])
     );
 
-    expect(await resolver.findTags('components/text.js', 'components/image.js')).toEqual(
+    expect(await resolver.resolveInverseTags('components/text.js', 'components/image.js')).toEqual(
       new Set(['bob', 'browse', 'button', 'edp', 'keyboard', 'mdp', 'menu', 'search', 'text', 'boxshot', 'image'])
     );
   });
