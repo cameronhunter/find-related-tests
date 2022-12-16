@@ -67,7 +67,7 @@ export class DependencyResolver {
   }
 
   async tags(paths: string | string[]): Promise<Set<string>> {
-    const files = Array.from(this.resolveInverse(paths)).concat(this.resolvePaths(paths));
+    const files = [...this.resolveInverse(paths), ...this.resolvePaths(paths)];
 
     const tags = await Promise.all(files.map((file) => this.getPragmaFromFile(file, 'tag')));
 
