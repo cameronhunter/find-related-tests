@@ -25,10 +25,10 @@ test('Resolve inverse tags', async () => {
   expect(await resolver.resolveInverseTags(['darwin/components/bob.js'])).toEqual(new Set(['browse', 'mdp', 'bob']));
 
   expect(await resolver.resolveInverseTags(['darwin/components/text.js'])).toEqual(
-    new Set(['bob', 'browse', 'button', 'edp', 'keyboard', 'mdp', 'menu', 'search', 'text'])
+    new Set(['bob', 'browse', 'button', 'keyboard', 'mdp', 'menu', 'profileGate', 'search'])
   );
 
   expect(await resolver.resolveInverseTags(['darwin/components/text.js', 'darwin/components/image.js'])).toEqual(
-    new Set(['bob', 'browse', 'button', 'edp', 'keyboard', 'mdp', 'menu', 'search', 'text', 'boxshot', 'image'])
+    new Set(['bob', 'browse', 'button', 'keyboard', 'mdp', 'menu', 'profileGate', 'search', 'boxshot'])
   );
 });
