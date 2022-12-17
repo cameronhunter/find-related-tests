@@ -2,7 +2,7 @@
 
 ## Context
 
-TVUI's testing strategy can split into two buckets: code tests and functional tests.
+Testing can be broadly split into two buckets: open-box and closed-box tests.
 
 Unit tests are "open-box" tests, they import a piece of code and place expectations and assertions on its behavior. The
 static import of the code under test makes it very easy to find related tests using a dependency graph. In fact, Jest
