@@ -1,5 +1,7 @@
 # Find Related Tests
 
+Find tests related to changed files, using a simple tagging mechanism.
+
 ## Context
 
 Testing can be broadly split into two buckets: open-box and closed-box tests.
@@ -67,6 +69,16 @@ change to `Button.js`, this will be:
 Notice that `smoke.test.js` is included – this is because we use the dependency
 graph to associate tags with tests. This enables us to implicitly tag tests when
 we use shared libraries, such as the Page Object Model.
+
+As a second example, changing `['Synopsis.js']` would result in:
+
+```ts
+['browse.test.js', 'details.test.js'];
+```
+
+This dramatically reduces the number of tests that we need to run, while
+_knowing_ that we're not losing coverage. We're simply testing only what needs
+to be tested.
 
 ## Usage
 
