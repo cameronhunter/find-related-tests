@@ -73,7 +73,7 @@ we use shared libraries, such as the Page Object Model.
 As a second example, changing `['Synopsis.js']` would result in:
 
 ```ts
-['browse.test.js', 'details.test.js'];
+['browse.test.js', 'details.test.js', 'smoke.test.js'];
 ```
 
 This dramatically reduces the number of tests that we need to run, while
