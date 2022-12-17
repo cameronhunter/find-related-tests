@@ -1,4 +1,4 @@
-# Find Related (Functional) Tests
+# Find Related Tests
 
 ## Context
 
