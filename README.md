@@ -80,7 +80,7 @@ This dramatically reduces the number of tests that we need to run, while
 _knowing_ that we're not losing coverage. We're simply testing only what needs
 to be tested.
 
-See the tests for further examples: [test/lib.test.js](test/lib.test.js).
+See the tests for further examples: [test/lib.test.ts](test/lib.test.ts).
 
 ## Usage
 
