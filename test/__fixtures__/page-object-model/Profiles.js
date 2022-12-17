@@ -1,14 +1,14 @@
 /**
- * @tag profileGate
+ * @tag profiles
  */
 
 import { Menu } from './Menu';
 
 type Page = any;
 
-export class ProfileGate {
+export class Profiles {
   static async from(page: Page) {
-    return new ProfileGate(page);
+    return new Profiles(page);
   }
 
   #page: Page;

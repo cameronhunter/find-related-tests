@@ -1,14 +1,14 @@
 /**
- * @tag mdp
+ * @tag details
  */
 
 import { Menu } from './Menu';
 
 type Page = any;
 
-export class MDP {
+export class Details {
   static async from(page: Page) {
-    return new MDP(page);
+    return new Details(page);
   }
 
   #page: Page;

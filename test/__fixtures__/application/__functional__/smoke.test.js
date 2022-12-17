@@ -1,11 +1,11 @@
-import { Browse, MDP, ProfileGate, Search } from '../../page-object-model';
+import { Browse, Details, Profiles, Search } from '../../page-object-model';
 
 const page = {};
 
 test('Smoke test', async () => {
-  const profileGate = await ProfileGate.from(page);
+  const profiles = await Profiles.from(page);
 
-  await profileGate.selectProfile(0);
+  await profiles.selectProfile(0);
 
   const browse = await Browse.from(page);
 
@@ -16,7 +16,7 @@ test('Smoke test', async () => {
   await search.searchFor('Stranger Things');
   await search.selectResult(0);
 
-  const mdp = await MDP.from(page);
+  const details = await Details.from(page);
 
-  await mdp.addToMyList();
+  await details.addToMyList();
 });

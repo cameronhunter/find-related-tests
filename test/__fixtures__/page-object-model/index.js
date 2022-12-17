@@ -1,4 +1,5 @@
 export { Browse } from './Browse';
-export { MDP } from './MDP';
-export { ProfileGate } from './ProfileGate';
+export { Details } from './Details';
+export { Profiles } from './Profiles';
 export { Search } from './Search';
+export { Menu } from './Menu';

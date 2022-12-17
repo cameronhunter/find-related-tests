@@ -1,0 +1,76 @@
+digraph G {
+  graph [shape = box; style = rounded; fontname = "Helvetica,Arial,sans-serif";];
+  node [shape = note; style = rounded;];
+  
+  subgraph routes {
+    label = <<b>Application</b>>;
+    cluster = true;
+    
+    route_index [label = <<b>index.js</b>>;];
+    route_profiles [label = <<b>Profiles.js</b>>;];
+    route_search [label = <<b>Search.js</b>>;];
+    route_details [label = <<b>Details.js</b>>;];
+    route_browse [label = <<b>Browse.js</b>>;];
+    component_menu [label = <<b>Menu.js</b>>;];
+    component_keyboard [label = <<b>Keyboard.js</b>>;];
+    component_boxshot [label = <<b>Boxshot.js</b>>;];
+    component_synopsis [label = <<b>Synopsis.js</b>>;];
+    component_button [label = <<b>Button.js</b>>;];
+    component_image [label = <<b>Image.js</b>>;];
+    component_text [label = <<b>Text.js</b>>;];
+    
+    route_index -> route_browse;
+    route_index -> route_profiles;
+    route_index -> route_details;
+    route_index -> route_search;
+    route_browse -> component_synopsis;
+    route_browse -> component_boxshot;
+    route_profiles -> component_menu;
+    route_profiles -> component_image;
+    route_details -> component_synopsis;
+    route_details -> component_menu;
+    route_search -> component_menu;
+    route_search -> component_boxshot;
+    route_search -> component_keyboard;
+    
+    component_menu -> component_button;
+    component_keyboard -> component_button;
+    component_boxshot -> component_image;
+    component_synopsis -> component_text;
+    component_button -> component_image;
+    component_button -> component_text;
+  }
+  
+  subgraph tests {
+    label = <<b>Functional Tests</b>>;
+    cluster = true;
+    
+    test_browse [label = <<b>browse.test.js</b>>;];
+    test_button [label = <<b>button.test.js</b>>;];
+    test_keyboard [label = <<b>keyboard.test.js</b>>;];
+    test_details [label = <<b>details.test.js</b>>;];
+    test_search [label = <<b>search.test.js</b>>;];
+    test_smoke [label = <<b>smoke.test.js</b>>;];
+    
+    test_smoke -> pom_index;
+  }
+  
+  subgraph page_object_model {
+    label = <<b>Page Object Model</b>>;
+    labelloc = "b";
+    cluster = true;
+    
+    pom_index [label = <<b>index.js</b>>;];
+    pom_search [label = <<b>Search.js</b>>;];
+    pom_profiles [label = <<b>Profiles.js</b>>;];
+    pom_details [label = <<b>Details.js</b>>;];
+    pom_browse [label = <<b>Browse.js</b>>;];
+    pom_keyboard [label = <<b>Keyboard.js</b>>;];
+    
+    pom_index -> pom_search;
+    pom_index -> pom_profiles;
+    pom_index -> pom_details;
+    pom_index -> pom_browse;
+    pom_search -> pom_keyboard;
+  }
+}

@@ -1,15 +1,18 @@
 {
-  "name": "build-dependency-graph",
-  "version": "0.1.2",
+  "name": "@cameronhunter/find-related-files",
+  "version": "0.0.0",
   "main": "build/lib.js",
   "types": "build/lib.d.ts",
-  "bin": "build/main.js",
+  "bin": {
+    "find-related-tests": "build/main.js"
+  },
   "license": "MIT",
   "files": [
     "build/lib.js",
     "build/main.js"
   ],
   "scripts": {
+    "start": "yarn build && ./build/main.js",
     "build": "tsc && chmod +x ./build/main.js",
     "test": "jest"
   },
