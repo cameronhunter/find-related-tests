@@ -52,8 +52,8 @@ well as the tags specified in `Button.js`).
 ![How tags are found](./docs/diagram_3.svg)
 
 By following the inverse dependencies from `Button.js`, we can see that it is
-used in `Keyboard` and `Menu`, and those components are used in `ProfileGate`,
-`Search`, and `MDP`. This results in these tags:
+used in `Keyboard` and `Menu`, and those components are used in `Profiles`,
+`Search`, and `Details`. This results in these tags:
 
 ```ts
 ['button', 'details', 'keyboard', 'profiles', 'search'];
@@ -70,7 +70,7 @@ Notice that `smoke.test.js` is included – this is because we use the dependenc
 graph to associate tags with tests. This enables us to implicitly tag tests when
 we use shared libraries, such as the Page Object Model.
 
-As a second example, changing `['Synopsis.js']` would result in:
+As a second example, changing `Synopsis.js` would result in:
 
 ```ts
 ['browse.test.js', 'details.test.js', 'smoke.test.js'];
