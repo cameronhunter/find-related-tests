@@ -1219,11 +1219,6 @@ graceful-fs@^4.2.9:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.10.tgz#147d3a006da4ca3ce14728c7aefc287c367d7a6c"
   integrity sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==
 
-graphviz2svg@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/graphviz2svg/-/graphviz2svg-0.2.0.tgz#64c55e74e38e7ab1763fc2ae111ee330ce96d6f8"
-  integrity sha512-9qOOMy+KqZhhI2U3wY2FwPmJTJGMs1087uKYfQ/QCLXGQb9m9HTTtWXGEKiuI9+G5r3JMIh4elYG3GF8jN1IDA==
-
 has-flag@^3.0.0:
   version "3.0.0"
   resolved "https://artifacts.netflix.com/api/npm/npm-netflix/has-flag/-/has-flag-3.0.0.tgz#b5d454dc2199ae225699f3467e5a07f3b955bafd"
