@@ -51,8 +51,6 @@ digraph G {
     test_details [label = <<b>details.test.js</b>>;];
     test_search [label = <<b>search.test.js</b>>;];
     test_smoke [label = <<b>smoke.test.js</b>>;];
-    
-    test_smoke -> pom_index;
   }
   
   subgraph page_object_model {
@@ -66,6 +64,8 @@ digraph G {
     pom_details [label = <<b>Details.js</b>>;];
     pom_browse [label = <<b>Browse.js</b>>;];
     pom_keyboard [label = <<b>Keyboard.js</b>>;];
+    
+    test_smoke -> pom_index;
     
     pom_index -> pom_search;
     pom_index -> pom_profiles;

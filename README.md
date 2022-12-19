@@ -18,7 +18,7 @@ to a list of related functional tests.
 This library aims to connect the dots between code changes and functional tests.
 It does this by building a dependency graph, like shown below:
 
-![A dependency graph](./docs/diagram_1.svg)
+![A dependency graph](./docs/diagram_1.dot.svg)
 
 As you can see, there is an application built of files that have dependencies on
 each other. There are functional tests (which we know do _not_ have a dependency
@@ -39,7 +39,7 @@ application we want.
 We can also add tags to the functional test files to specify which "tags" we're
 testing. Here's an example of how we could annotate our example application:
 
-![An annotated dependency graph](./docs/diagram_2.svg)
+![An annotated dependency graph](./docs/diagram_2.dot.svg)
 
 Notice that we don't need to annotate every file.
 
@@ -49,7 +49,7 @@ Let's say that a developer makes a change to `Button.js`. The library will build
 an _inverse_ dependency graph, and collect tags from all dependent files (as
 well as the tags specified in `Button.js`).
 
-![How tags are found](./docs/diagram_3.svg)
+![How tags are found](./docs/diagram_3.dot.svg)
 
 By following the inverse dependencies from `Button.js`, we can see that it is
 used in `Keyboard` and `Menu`, and those components are used in `Profiles`,

@@ -6,8 +6,6 @@ digraph G {
     label = <<b>Application</b>>;
     cluster = true;
     
-    edge [dir = "back";];
-    
     route_index [label = <<b>index.js</b>>;];
     route_profiles [label = <<b>Profiles.js</b><br/><br/>/** @tag profiles */>;];
     route_search [label = <<b>Search.js</b><br/><br/>/** @tag search */>;];
@@ -17,26 +15,26 @@ digraph G {
     component_keyboard [label = <<b>Keyboard.js</b><br/><br/>/** @tag keyboard */>;];
     component_boxshot [label = <<b>Boxshot.js</b>>;];
     component_synopsis [label = <<b>Synopsis.js</b>>;];
-    component_button [label = <<b>Button.js</b><br/><br/>/** @tag button */>;fillcolor = "orange";style = "filled";];
+    component_button [label = <<b>Button.js</b><br/><br/>/** @tag button */>;];
     component_image [label = <<b>Image.js</b>>;];
     component_text [label = <<b>Text.js</b>>;];
     
     route_index -> route_browse;
-    route_index -> route_profiles [color = "green";];
-    route_index -> route_details [color = "green";];
-    route_index -> route_search [color = "green";];
+    route_index -> route_profiles;
+    route_index -> route_details;
+    route_index -> route_search;
     route_browse -> component_synopsis;
     route_browse -> component_boxshot;
-    route_profiles -> component_menu [color = "green";];
+    route_profiles -> component_menu;
     route_profiles -> component_image;
     route_details -> component_synopsis;
-    route_details -> component_menu [color = "green";];
-    route_search -> component_menu [color = "green";];
+    route_details -> component_menu;
+    route_search -> component_menu;
     route_search -> component_boxshot;
-    route_search -> component_keyboard [color = "green";];
+    route_search -> component_keyboard;
     
-    component_menu -> component_button [color = "green";];
-    component_keyboard -> component_button [color = "green";];
+    component_menu -> component_button;
+    component_keyboard -> component_button;
     component_boxshot -> component_image;
     component_synopsis -> component_text;
     component_button -> component_image;
@@ -53,8 +51,6 @@ digraph G {
     test_details [label = <<b>details.test.js</b><br/><br/>/** @tag details */>;];
     test_search [label = <<b>search.test.js</b><br/><br/>/** @tag search */>;];
     test_smoke [label = <<b>smoke.test.js</b>>;];
-    
-    test_smoke -> pom_index [color = "green";];
   }
   
   subgraph page_object_model {
@@ -69,10 +65,12 @@ digraph G {
     pom_browse [label = <<b>Browse.js</b><br/><br/>/** @tag browse */>;];
     pom_keyboard [label = <<b>Keyboard.js</b><br/><br/>/** @tag keyboard */>;];
     
-    pom_index -> pom_search [color = "green";];
-    pom_index -> pom_profiles [color = "green";];
-    pom_index -> pom_details [color = "green";];
-    pom_index -> pom_browse [color = "green";];
-    pom_search -> pom_keyboard [color = "green";];
+    test_smoke -> pom_index;
+    
+    pom_index -> pom_search;
+    pom_index -> pom_profiles;
+    pom_index -> pom_details;
+    pom_index -> pom_browse;
+    pom_search -> pom_keyboard;
   }
 }
