@@ -85,7 +85,7 @@ See the tests for further examples: [test/lib.test.ts](test/lib.test.ts).
 ## Usage
 
 ```sh
-$ npm install @cameronhunter/find-related-tests
+npm install @cameronhunter/find-related-tests
 ```
 
 You can use this as a library:
