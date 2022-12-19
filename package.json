@@ -8,8 +8,7 @@
   },
   "license": "MIT",
   "files": [
-    "build/lib.js",
-    "build/main.js"
+    "build/*.js"
   ],
   "scripts": {
     "start": "yarn build && ./build/main.js",
