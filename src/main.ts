@@ -5,7 +5,7 @@ import { Project } from './lib';
 import * as assert from 'node:assert';
 
 const {
-  values: { file: files, config, cwd, tags }
+  values: { file: files, jestConfig, cwd, tags }
 } = parseArgs({
   options: {
     file: {
@@ -13,7 +13,7 @@ const {
       short: 'f',
       multiple: true
     },
-    config: {
+    jestConfig: {
       type: 'string'
     },
     tags: {
@@ -28,9 +28,9 @@ const {
 
 async function main() {
   assert.ok(files, 'Expected a `file` parameter to be defined');
-  assert.ok(config, 'Expected a `config` parameter to be defined');
+  assert.ok(jestConfig, 'Expected a `jestConfig` parameter to be defined');
 
-  const project = new Project(config, { cwd: cwd || process.cwd() });
+  const project = new Project(jestConfig, { cwd: cwd || process.cwd() });
 
   const results = await (tags ? project.findRelatedTags(files) : project.findRelatedTests(files));
 

@@ -2,6 +2,7 @@ import * as path from 'node:path';
 import { parseTagMap, parseTags } from './parseTags';
 import Jest from './jest';
 import type { JestDependencyResolver } from './jest';
+import type { MinimatchOptions } from 'minimatch';
 
 export interface Options {
   /**
@@ -11,6 +12,21 @@ export interface Options {
    * process's current working directory.
    */
   cwd?: string;
+
+  /**
+   * A map of file globs to parser functions. This can be used to provide custom
+   * tag parsers for particular file types. The default parser (docblock) is
+   * used when there is no better match provided.
+   *
+   * The glob is used to match on the file path using [`minimatch`](https://www.npmjs.com/package/minimatch)
+   * which can be configured by passing `minimatchOptions` if necessary.
+   */
+  parsers?: { [glob: string]: (fileContents: string) => string[] } | undefined;
+
+  /**
+   * Options passed directly to `minimatch` for file glob matching.
+   */
+  minimatchOptions?: MinimatchOptions | undefined;
 }
 
 export class Project {
@@ -21,7 +37,7 @@ export class Project {
   #tagsToTests?: Map<string, string[]>;
 
   constructor(configPath: string, options?: Options) {
-    this.#options = { cwd: process.cwd(), ...options };
+    this.#options = { cwd: process.cwd(), parsers: undefined, minimatchOptions: undefined, ...options };
     this.#jest = new Jest(path.resolve(this.#options.cwd, configPath));
   }
 
