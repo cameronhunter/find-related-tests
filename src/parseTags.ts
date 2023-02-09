@@ -10,8 +10,8 @@ import { extract, parse } from 'jest-docblock';
  */
 export async function parseTags(filepath: string | string[], options?: { cwd?: string }): Promise<string[]> {
   if (Array.isArray(filepath)) {
-    const tags = await parseTagMap(filepath, options);
-    return Array.from(tags.keys());
+    const tags = await Promise.all(filepath.map((fp) => parseTags(fp, options)));
+    return tags.flat(1);
   }
 
   const cwd = options?.cwd || process.cwd();
