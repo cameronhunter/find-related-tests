@@ -16,20 +16,8 @@ export async function parseTags(filepath: string | string[], options?: { cwd?: s
 
   const cwd = options?.cwd || process.cwd();
   const contents = await fs.readFile(path.resolve(cwd, filepath), 'utf-8');
-  const docblock = extract(contents);
-  const pragmas = parse(docblock);
 
-  const tags = pragmas['tag'];
-
-  if (!tags) {
-    return [];
-  }
-
-  if (typeof tags === 'string') {
-    return [tags];
-  }
-
-  return tags;
+  return parseTagsFromDocblock(contents);
 }
 
 /**
@@ -48,4 +36,21 @@ export async function parseTagMap(filepaths: string[], options?: { cwd?: string 
 
     return state;
   }, new Map<string, string[]>());
+}
+
+function parseTagsFromDocblock(fileContents: string): string[] {
+  const docblock = extract(fileContents);
+  const pragmas = parse(docblock);
+
+  const tags = pragmas['tag'];
+
+  if (!tags) {
+    return [];
+  }
+
+  if (typeof tags === 'string') {
+    return [tags];
+  }
+
+  return tags;
 }
