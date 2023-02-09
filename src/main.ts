@@ -3,17 +3,15 @@
 import { parseArgs } from 'node:util';
 import { Project } from './lib';
 import * as assert from 'node:assert';
+import { resolve } from 'node:path';
 
-const {
-  values: { file: files, jestConfig, cwd, tags }
-} = parseArgs({
+const { positionals: files, values } = parseArgs({
+  allowPositionals: true,
   options: {
-    file: {
-      type: 'string',
-      short: 'f',
-      multiple: true
-    },
     jestConfig: {
+      type: 'string'
+    },
+    config: {
       type: 'string'
     },
     tags: {
@@ -27,10 +25,17 @@ const {
 });
 
 async function main() {
-  assert.ok(files, 'Expected a `file` parameter to be defined');
-  assert.ok(jestConfig, 'Expected a `jestConfig` parameter to be defined');
+  assert.ok(files, 'Expected at least one file path as a positional argument');
+  assert.ok(values.jestConfig || values.config, 'Expected a `jestConfig` or `config` parameter to be defined');
 
-  const project = new Project(jestConfig, { cwd: cwd || process.cwd() });
+  const cwd = values.cwd || process.cwd();
+  const config = values.config ? require(resolve(cwd, values.config)) : undefined;
+  const jestConfig = values.jestConfig || config?.jestConfig;
+  const parsers = config?.parsers;
+  const minimatchOptions = config?.minimatchOptions;
+  const tags = values.tags || config?.tags;
+
+  const project = new Project(jestConfig, { cwd, parsers, minimatchOptions });
 
   const results = await (tags ? project.findRelatedTags(files) : project.findRelatedTests(files));
 
