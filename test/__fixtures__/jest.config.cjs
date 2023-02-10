@@ -1,4 +1,4 @@
 module.exports = {
   rootDir: __dirname,
-  testMatch: ['**/__functional__/**/*']
+  testMatch: ['**/__functional__/**/*', '**/__stories__/**/*']
 };

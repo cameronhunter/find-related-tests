@@ -25,6 +25,8 @@
     "minimatch": "^6.1.6"
   },
   "devDependencies": {
+    "@babel/parser": "^7.20.15",
+    "@babel/traverse": "^7.20.13",
     "@tsconfig/node18-strictest": "^1.0.0",
     "@types/dedent": "^0.7.0",
     "@types/glob": "^8.0.0",
