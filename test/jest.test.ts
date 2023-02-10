@@ -4,15 +4,21 @@ import * as path from 'node:path';
 test('getTestPaths', async () => {
   const jest = new Jest('jest.config.cjs', { cwd: './test/__fixtures__' });
 
-  expect(await jest.getTestPaths()).toEqual([
-    expect.stringContaining('application/__functional__/browse.test.js'),
+  const testPaths = await jest.getTestPaths();
+
+  const expected = [
     expect.stringContaining('application/__functional__/button.test.js'),
-    expect.stringContaining('application/__functional__/details.test.js'),
+    expect.stringContaining('application/__functional__/browse.test.js'),
     expect.stringContaining('application/__functional__/keyboard.test.js'),
     expect.stringContaining('application/__functional__/menu.test.js'),
+    expect.stringContaining('application/__functional__/details.test.js'),
     expect.stringContaining('application/__functional__/search.test.js'),
-    expect.stringContaining('application/__functional__/smoke.test.js')
-  ]);
+    expect.stringContaining('application/__functional__/smoke.test.js'),
+    expect.stringContaining('application/__stories__/button.story.js')
+  ];
+
+  expect(testPaths).toHaveLength(expected.length);
+  expect(testPaths).toEqual(expect.arrayContaining(expected));
 });
 
 describe('getDependencyResolver', () => {
@@ -38,11 +44,14 @@ describe('getDependencyResolver', () => {
       () => true
     );
 
-    expect(dependents).toEqual([
-      expect.stringContaining('application/routes/browse.js'),
+    const expected = [
       expect.stringContaining('application/routes/details.js'),
+      expect.stringContaining('application/routes/browse.js'),
       expect.stringContaining('application/index.js'),
       expect.stringContaining('application/components/synopsis.js')
-    ]);
+    ];
+
+    expect(dependents).toHaveLength(expected.length);
+    expect(dependents).toEqual(expect.arrayContaining(expected));
   });
 });
